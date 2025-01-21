@@ -1,13 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qca-nss-drv
-PKG_RELEASE:=12
+PKG_RELEASE:=15
 
 PKG_SOURCE_URL:=https://git.codelinaro.org/clo/qsdk/oss/lklm/nss-drv.git
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_DATE:=2024-04-06
 PKG_SOURCE_VERSION:=53a0dc1
-PKG_MIRROR_HASH:=9b7774407f950f4ae8390e77e67ecdbeb0af5575191645666a0b5caa6e3bd413
+PKG_MIRROR_HASH:=2ee9bb3d23eea442f3f1a77384f54bf14c638e4246fbc2d95291c0e1864ab98e
 QSDK_VERSION:=12.5
 PKG_VERSION:=$(QSDK_VERSION).$(subst -,.,$(PKG_SOURCE_DATE))~$(PKG_SOURCE_VERSION)
 
@@ -64,7 +64,7 @@ PKG_CONFIG_DEPENDS:= \
 ifeq ($(CONFIG_NSS_FIRMWARE_VERSION_11_4),y)
 PKG_SOURCE_DATE:=2021-09-13
 PKG_SOURCE_VERSION:=53e5863
-PKG_MIRROR_HASH:=24ffda06f6f4fe52f6d47a32d43d58e111a35ae65a0893664c931cb7bb7eca12
+PKG_MIRROR_HASH:=e4291687e200acad06c10dda49061fff569239076dabd3033337c73d5fc6c245
 PATCH_DIR:=$(CURDIR)/patches-11.4
 QSDK_VERSION:=11.4.0.5
 PKG_VERSION:=$(QSDK_VERSION).$(subst -,.,$(PKG_SOURCE_DATE))~$(PKG_SOURCE_VERSION)
@@ -102,7 +102,6 @@ define KernelPackage/qca-nss-drv/install
 	$(INSTALL_DATA) ./files/qca-nss-drv.uci $(1)/etc/config/nss
 	$(INSTALL_DATA) ./files/qca-nss-drv.hotplug $(1)/etc/hotplug.d/firmware/10-qca-nss-fw
 	$(INSTALL_BIN) ./files/qca-nss-drv.debug $(1)/usr/bin/nss_stats
-
 endef
 
 define KernelPackage/qca-nss-drv/conffiles
@@ -119,6 +118,9 @@ ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq807x")
   subtarget:=$(CONFIG_TARGET_SUBTARGET)
 else ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq60xx")
   SOC="ipq60xx_64"
+  subtarget:=$(CONFIG_TARGET_SUBTARGET)
+else ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq50xx")
+  SOC="ipq50xx_64"
   subtarget:=$(CONFIG_TARGET_SUBTARGET)
 endif
 

@@ -1,13 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qca-nss-crypto
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 
 PKG_SOURCE_URL:=https://git.codelinaro.org/clo/qsdk/oss/lklm/nss-crypto.git
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_DATE:=2022-12-15
 PKG_SOURCE_VERSION:=3c5a574
-PKG_MIRROR_HASH:=a195ba22016d91cd1711fe8f5167d65cfbd03feee5a9089929cb0d2180bf4047
+PKG_MIRROR_HASH:=085db1cf51170b0bb64b8bf5c086778aac7fcc2e3379497592c0855db6a25e5f
 QSDK_VERSION:=12.5
 PKG_VERSION:=$(QSDK_VERSION).$(subst -,.,$(PKG_SOURCE_DATE))~$(PKG_SOURCE_VERSION)
 
@@ -18,7 +18,7 @@ include $(INCLUDE_DIR)/package.mk
 
 # v1.0 is for Akronite
 # v2.0 is for Hawkeye/Cypress/Maple
-ifneq (, $(findstring $(CONFIG_TARGET_SUBTARGET), "ipq807x" "ipq60xx"))
+ifneq (, $(findstring $(CONFIG_TARGET_SUBTARGET), "ipq807x" "ipq60xx" "ipq50xx"))
 NSS_CRYPTO_DIR:=v2.0
 else
 NSS_CRYPTO_DIR:=v1.0
@@ -28,7 +28,7 @@ define KernelPackage/qca-nss-crypto
 	SECTION:=kernel
 	CATEGORY:=Kernel modules
 	SUBMENU:=Cryptographic API modules
-	DEPENDS:=@TARGET_qualcommax +kmod-qca-nss-drv +@NSS_DRV_CRYPTO_ENABLE @BROKEN
+	DEPENDS:=@TARGET_qualcommax +kmod-qca-nss-drv +nss-eip-firmware +@NSS_DRV_CRYPTO_ENABLE
 	TITLE:=Kernel driver for NSS crypto driver
 	FILES:=$(PKG_BUILD_DIR)/$(NSS_CRYPTO_DIR)/src/qca-nss-crypto.ko \
 	$(PKG_BUILD_DIR)/$(NSS_CRYPTO_DIR)/tool/qca-nss-crypto-tool.ko

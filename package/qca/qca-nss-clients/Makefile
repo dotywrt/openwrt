@@ -7,7 +7,7 @@ PKG_SOURCE_URL:=https://git.codelinaro.org/clo/qsdk/oss/lklm/nss-clients.git
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_DATE:=2024-06-12
 PKG_SOURCE_VERSION:=1bcef16
-PKG_MIRROR_HASH:=5388c9ba1ba66b2a237426bf4762da90ff2893fa5cd324ff6fbe59c8c722608a
+PKG_MIRROR_HASH:=7902001c140d36b089692d1637c780a256b9a167e844a8735c9cac6c8adfc1df
 QSDK_VERSION:=12.5
 PKG_VERSION:=$(QSDK_VERSION).$(subst -,.,$(PKG_SOURCE_DATE))~$(PKG_SOURCE_VERSION)
 
@@ -54,7 +54,7 @@ PKG_CONFIG_DEPENDS:=\
 ifeq ($(CONFIG_NSS_FIRMWARE_VERSION_11_4),y)
 PKG_SOURCE_DATE:=2021-08-17
 PKG_SOURCE_VERSION:=c4049d1
-PKG_MIRROR_HASH:=56cd0b3daca414bd215c3c804d5ca9bdbdaca128c05a9452c7b1eb592b17061c
+PKG_MIRROR_HASH:=98f12c1113075943f8883d38617c310d1cb6180250c6d15f836a3f2007cf8ec1
 PATCH_DIR:=$(CURDIR)/patches-11.4
 QSDK_VERSION:=11.4.0.5
 PKG_VERSION:=$(QSDK_VERSION).$(subst -,.,$(PKG_SOURCE_DATE))~$(PKG_SOURCE_VERSION)
@@ -69,11 +69,14 @@ ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq807x")
 else ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq60xx")
   SOC="ipq60xx_64"
   subtarget:=$(CONFIG_TARGET_SUBTARGET)
+else ifeq ($(CONFIG_TARGET_SUBTARGET), "ipq50xx")
+  SOC="ipq50xx_64"
+  subtarget:=$(CONFIG_TARGET_SUBTARGET)
 else
   SOC=$(CONFIG_TARGET_BOARD)
 endif
 
-ifneq (, $(findstring $(subtarget), "ipq807x" "ipq807x_64" "ipq60xx" "ipq60xx_64"))
+ifneq (, $(findstring $(subtarget), "ipq807x" "ipq807x_64" "ipq60xx" "ipq60xx_64" "ipq50xx" "ipq50xx_64"))
 # DTLS Manager v2.0 for Hawkeye/Cypress
   DTLSMGR_DIR:=v2.0
 # IPsec Manager v2.0 for Hawkeye/Cypress
@@ -739,7 +742,7 @@ define Build/Compile
 	  CROSS_COMPILE="$(TARGET_CROSS)" \
 	  ARCH="$(LINUX_KARCH)" \
 	  M="$(PKG_BUILD_DIR)" \
-	  EXTRA_CFLAGS="$(EXTRA_CFLAGS) -Wno-enum-conversion" \
+	  EXTRA_CFLAGS="$(EXTRA_CFLAGS) -Wno-enum-conversion -Wno-unused-variable -Wno-int-conversion" \
 	  DTLSMGR_DIR="$(DTLSMGR_DIR)" \
 	  IPSECMGR_DIR="$(IPSECMGR_DIR)" \
 	  SoC=$(SOC) \
