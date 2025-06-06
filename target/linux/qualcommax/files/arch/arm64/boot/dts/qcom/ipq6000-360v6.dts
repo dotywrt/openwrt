@@ -6,6 +6,7 @@
 #include "ipq6018-512m.dtsi"
 #include "ipq6018-ess.dtsi"
 #include "ipq6018-nss.dtsi"
+#include "ipq6018-common.dtsi"
 #include "ipq6018-cp-cpu.dtsi"
 
 #include <dt-bindings/gpio/gpio.h>
@@ -240,41 +241,5 @@
  };
 
 &edma {
-	status = "okay";
-};
-
-&prng {
-	status = "okay";
-};
-
-&cryptobam {
-	status = "okay";
-};
-
-&crypto {
-	status = "okay";
-};
-
-&qpic_bam {
-	status = "okay";
-};
-
-&qusb_phy_0 {
-	status = "okay";
-};
-
-&ssphy_0 {
-	status = "okay";
-};
-
-&qusb_phy_0 {
-	status = "ok";
-};
-
-&usb2 {
-	status = "okay";
-};
-
-&usb3 {
 	status = "okay";
 };
