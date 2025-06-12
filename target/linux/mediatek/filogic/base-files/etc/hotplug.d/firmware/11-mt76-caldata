@@ -33,6 +33,9 @@ case "$FIRMWARE" in
 		ln -sf /tmp/tp_data/MT7986_EEPROM.bin \
 			/lib/firmware/$FIRMWARE
 		;;
+	jdcloud,re-cs-05)
+		caldata_extract_mmc "factory" 0x0 0x1000
+		;;
 	esac
 	;;
 *)
