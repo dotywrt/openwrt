@@ -30,7 +30,7 @@ on:
 
 jobs:
   build:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/24.10-main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -39,7 +39,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: 24.10-main
           fetch-depth: 0
 
       - name: Set timezone to Malaysia
