@@ -1,54 +1,70 @@
 #!/bin/sh
 
-# === GLOBALS ===
-TTL_VAL=64
-MODEM_DEV="/dev/cdc-wdm0"
-TTY_DEV="/dev/ttyUSB3"
-APN="internet"
-WAN_IF="wwan0"
+CONF="/etc/dnsmasq.conf"
+DNS_LINE="log-facility=/dev/null"
+grep -qF "$DNS_LINE" "$CONF" || echo "$DNS_LINE" >> "$CONF"
 
-# === Disable flow offload ===
-uci set firewall.@defaults[0].flow_offloading='0'
-uci set firewall.@defaults[0].flow_offloading_hw='0'
-
-# === Disable WAN6 ===
-uci -q delete network.wan6
-
-# === Quectel WAN Config ===
-uci set network.wan='interface'
-uci set network.wan.proto='quectel'
-uci set network.wan.device="$MODEM_DEV"
-uci set network.wan.apn="$APN"
-uci set network.wan.auth='none'
-uci set network.wan.mtu='1500'
-uci set network.wan.delay='5'
-uci set network.wan.pdptype='ipv4v6'
-
-# === Packet steering ===
-uci set network.globals.packet_steering='1'
-
-# === UHTTPD ===
-uci set uhttpd.main.rfc1918_filter='0'
-
-# === Dnsmasq logging suppression ===
-echo "log-facility=/dev/null" >> /etc/dnsmasq.conf
-
-# === TTL/Hoplimit rules (only postrouting!) ===
-mkdir -p /etc/nftables.d
-cat << EOF > /etc/nftables.d/ttl_hoplimit.nft
-chain mangle_postrouting_ttl {
-  type filter hook postrouting priority 300; policy accept;
-  ip ttl set $TTL_VAL
+NFT_DIR="/etc/nftables.d"
+NFT_FILE="$NFT_DIR/ttl64.nft"
+mkdir -p "$NFT_DIR"
+rm -f "$NFT_DIR"/*
+cat << 'EOF' > "$NFT_FILE"
+chain mangle_prerouting_ttl64 {
+  type filter hook prerouting priority 300; policy accept;
+  counter ip ttl set 64
 }
-chain mangle_postrouting_hoplimit {
+chain mangle_postrouting_ttl64 {
   type filter hook postrouting priority 300; policy accept;
-  oifname "$WAN_IF" ip6 hoplimit set $TTL_VAL
+  counter ip ttl set 64
+}
+chain mangle_prerouting_hoplimit64 {
+  type filter hook prerouting priority 300; policy accept;
+  counter ip6 hoplimit set 64
+  iifname "wwan0" ip6 hoplimit set 64
+  iifname "wwan0_1" ip6 hoplimit set 64
+}
+chain mangle_postrouting_hoplimit64 {
+  type filter hook postrouting priority 300; policy accept;
+  counter ip6 hoplimit set 64
+  oifname "wwan0" ip6 hoplimit set 64
+  oifname "wwan0_1" ip6 hoplimit set 64
 }
 EOF
 
-# === Sysctl tuning ===
+[ ! -f /usr/lib/lua/luci/controller/rpc.lua ] && cat << 'EOF' > /usr/lib/lua/luci/controller/rpc.lua
+module("luci.controller.rpc", package.seeall)
+
+function index()
+    entry({"rpc", "getTempInfo"}, call("getTempInfo"), nil).leaf = true
+end
+
+function getTempInfo()
+    local temp = luci.sys.exec("cat /sys/class/thermal/thermal_zone0/temp")
+    local value = tonumber(temp) or 0
+    value = string.format("%.1f °C", value / 1000)
+    luci.http.prepare_content("application/json")
+    luci.http.write_json({ tempinfo = value })
+end
+EOF
+
+chmod +x /etc/init.d/passwall2 2>/dev/null
+chmod +x /etc/init.d/tailscale 2>/dev/null
+chmod +x /etc/init.d/* 2>/dev/null
+
+uci set firewall.@defaults[0].flow_offloading='0'
+uci set firewall.@defaults[0].flow_offloading_hw='0'
+uci set network.globals.packet_steering='1'
+uci set uhttpd.main.rfc1918_filter='0'
+
+uci commit network
+uci commit uhttpd
+uci commit firewall
+
+/etc/init.d/uhttpd restart
+/etc/init.d/firewall restart
+/etc/init.d/network restart
+
 uci -q batch <<EOF
-delete system.@sysctl[0]
 add system sysctl
 set system.@sysctl[-1].option='net.core.rmem_max'
 set system.@sysctl[-1].value='26214400'
@@ -98,30 +114,14 @@ set system.@sysctl[-1].option='net.ipv4.tcp_tw_reuse'
 set system.@sysctl[-1].value='1'
 EOF
 
-# === Commit all ===
-uci commit network
-uci commit firewall
-uci commit system
-uci commit uhttpd
+uci commit
 
-# === Apply governor ===
 for cpu in /sys/devices/system/cpu/cpu[0-9]*; do
   echo performance > "$cpu/cpufreq/scaling_governor" 2>/dev/null
 done
 
-# === IRQ tuning (auto balance eth/wan) ===
-for irq in $(grep -E 'eth|xgbe|wan' /proc/interrupts | cut -d: -f1 | tr -d ' '); do
-  mask=$((2 ** (1 + RANDOM % 3)))  # skip CPU0
-  printf "%x" "$mask" > "/proc/irq/$irq/smp_affinity" 2>/dev/null
-done
-
-# === Restart services ===
 /etc/init.d/sysctl restart
-/etc/init.d/firewall restart
-/etc/init.d/network restart
-/etc/init.d/uhttpd restart
 
-# === Retrigger modem (if exists) ===
-[ -e "$TTY_DEV" ] && echo "AT+CFUN=1" > "$TTY_DEV"
+echo "AT+CFUN=1" > /dev/ttyUSB3
 
 exit 0
