@@ -104,6 +104,16 @@ jobs:
           echo "FW_BASENAME=${{ github.event.inputs.project_prefix }}-V${{ github.event.inputs.version }}-${{ github.event.inputs.build_name }}" >> $GITHUB_ENV
           echo "FW_CC=${{ github.event.inputs.project_prefix }} V${{ github.event.inputs.version }}-${{ github.event.inputs.build_name }}" >> $GITHUB_ENV
 
+      - name: Setup Build Version
+        run: |
+          TODAY=$(date '+%d-%b-%Y')
+          sed -i "s/DDDD/${TODAY}/g" files/www/luci-static/resources/view/status/include/10_system.js
+          sed -i "s/XXXX/${FW_CC}/g" files/www/luci-static/resources/view/status/include/10_system.js
+          sed -i "s/XXXX/${FW_BASENAME}/g" package/base-files/files/etc/banner
+          sed -i "s/XXXX/$(echo "${BUILD_NAME}" | tr '[:upper:]' '[:lower:]')/g" files/etc/opkg/customfeeds.conf
+        env:
+          FW_BASENAME: ${{ env.FW_BASENAME }}
+
       - name: Update & install feeds
         run: |
           ./scripts/feeds update -a
