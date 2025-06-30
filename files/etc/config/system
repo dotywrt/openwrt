@@ -1,4 +1,3 @@
-
 config system
 	option hostname 'DOTYWRT'
 	option timezone '<+08>-8'
@@ -16,12 +15,38 @@ config timeserver 'ntp'
 	list server '2.openwrt.pool.ntp.org'
 	list server '3.openwrt.pool.ntp.org'
 
+config led 'led_power'
+	option name 'POWER'
+	option sysfs 'green:power'
+	option trigger 'default-on'
+
 config led 'led_5g'
 	option name '5G'
 	option sysfs 'green:5g'
 	option trigger 'netdev'
 	option mode 'link tx rx'
 	option dev 'wwan0'
+
+config led 'led_mobile_signal'
+	option name 'MOBILE SIGNAL'
+	option sysfs 'green:signal'
+	option trigger 'netdev'
+	option mode 'link tx rx'
+	option dev 'wwan0'
+
+config led 'led_wifi'
+	option name 'WIFI'
+	option sysfs 'green:wifi'
+	option trigger 'netdev'
+	option mode 'link tx rx'
+	option dev 'wlan0' 
+
+config led 'led_phone'
+	option name 'PHONE'
+	option sysfs 'green:phone'
+	option trigger 'netdev'
+	option mode 'link tx rx'
+	option dev 'usb0'  
 
 config led 'led_wan'
 	option name 'WAN'
@@ -36,4 +61,3 @@ config led 'led_wan_port_link'
 	option trigger 'netdev'
 	option mode 'tx rx link_10 link_100 link_1000 link_2500'
 	option dev 'wan'
-
