@@ -4,33 +4,6 @@ CONF="/etc/dnsmasq.conf"
 DNS_LINE="log-facility=/dev/null"
 grep -qF "$DNS_LINE" "$CONF" || echo "$DNS_LINE" >> "$CONF"
 
-NFT_DIR="/etc/nftables.d"
-NFT_FILE="$NFT_DIR/ttl64.nft"
-mkdir -p "$NFT_DIR"
-rm -f "$NFT_DIR"/*
-cat << 'EOF' > "$NFT_FILE"
-chain mangle_prerouting_ttl64 {
-  type filter hook prerouting priority 300; policy accept;
-  counter ip ttl set 64
-}
-chain mangle_postrouting_ttl64 {
-  type filter hook postrouting priority 300; policy accept;
-  counter ip ttl set 64
-}
-chain mangle_prerouting_hoplimit64 {
-  type filter hook prerouting priority 300; policy accept;
-  counter ip6 hoplimit set 64
-  iifname "wwan0" ip6 hoplimit set 64
-  iifname "wwan0_1" ip6 hoplimit set 64
-}
-chain mangle_postrouting_hoplimit64 {
-  type filter hook postrouting priority 300; policy accept;
-  counter ip6 hoplimit set 64
-  oifname "wwan0" ip6 hoplimit set 64
-  oifname "wwan0_1" ip6 hoplimit set 64
-}
-EOF
-
 [ ! -f /usr/lib/lua/luci/controller/rpc.lua ] && cat << 'EOF' > /usr/lib/lua/luci/controller/rpc.lua
 module("luci.controller.rpc", package.seeall)
 
@@ -47,22 +20,11 @@ function getTempInfo()
 end
 EOF
 
-chmod +x /etc/init.d/passwall2 2>/dev/null
-chmod +x /etc/init.d/tailscale 2>/dev/null
 chmod +x /etc/init.d/* 2>/dev/null
 
-uci set firewall.@defaults[0].flow_offloading='0'
-uci set firewall.@defaults[0].flow_offloading_hw='0'
-uci set network.globals.packet_steering='1'
 uci set uhttpd.main.rfc1918_filter='0'
-
-uci commit network
 uci commit uhttpd
-uci commit firewall
-
 /etc/init.d/uhttpd restart
-/etc/init.d/firewall restart
-/etc/init.d/network restart
 
 uci -q batch <<EOF
 add system sysctl
@@ -78,31 +40,11 @@ set system.@sysctl[-1].option='net.core.netdev_max_backlog'
 set system.@sysctl[-1].value='5000'
 
 add system sysctl
-set system.@sysctl[-1].option='net.ipv4.tcp_rmem'
-set system.@sysctl[-1].value='4096 87380 16777216'
-
-add system sysctl
-set system.@sysctl[-1].option='net.ipv4.tcp_wmem'
-set system.@sysctl[-1].value='4096 65536 16777216'
-
-add system sysctl
-set system.@sysctl[-1].option='net.ipv4.tcp_congestion_control'
-set system.@sysctl[-1].value='bbr'
-
-add system sysctl
-set system.@sysctl[-1].option='net.core.default_qdisc'
-set system.@sysctl[-1].value='fq'
-
-add system sysctl
 set system.@sysctl[-1].option='net.ipv4.tcp_low_latency'
 set system.@sysctl[-1].value='1'
 
 add system sysctl
-set system.@sysctl[-1].option='net.ipv4.tcp_timestamps'
-set system.@sysctl[-1].value='1'
-
-add system sysctl
-set system.@sysctl[-1].option='net.ipv4.tcp_sack'
+set system.@sysctl[-1].option='net.ipv4.tcp_tw_reuse'
 set system.@sysctl[-1].value='1'
 
 add system sysctl
@@ -110,18 +52,25 @@ set system.@sysctl[-1].option='net.ipv4.tcp_window_scaling'
 set system.@sysctl[-1].value='1'
 
 add system sysctl
-set system.@sysctl[-1].option='net.ipv4.tcp_tw_reuse'
+set system.@sysctl[-1].option='net.ipv4.tcp_sack'
 set system.@sysctl[-1].value='1'
+
+add system sysctl
+set system.@sysctl[-1].option='net.ipv4.tcp_timestamps'
+set system.@sysctl[-1].value='1'
+
+add system sysctl
+set system.@sysctl[-1].option='net.core.default_qdisc'
+set system.@sysctl[-1].value='fq'
 EOF
 
-uci commit
+uci commit system
+/etc/init.d/sysctl restart
 
 for cpu in /sys/devices/system/cpu/cpu[0-9]*; do
   echo performance > "$cpu/cpufreq/scaling_governor" 2>/dev/null
 done
 
-/etc/init.d/sysctl restart
-
-echo "AT+CFUN=1" > /dev/ttyUSB3
+echo "AT+CFUN=1" > /dev/ttyUSB3 2>/dev/null
 
 exit 0
