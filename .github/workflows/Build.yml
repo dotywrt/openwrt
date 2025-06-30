@@ -54,9 +54,9 @@ jobs:
               exit 1
             else
               echo "✅ Found: $file"
-              chmod +x files/etc/uci-defaults/99-nss-custom
             fi
           done
+          chmod +x ./files/etc/uci-defaults/99-nss-custom
 
       - name: Show disk space before cleanup
         run: df -h
