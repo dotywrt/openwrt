@@ -1,0 +1,111 @@
+
+config system
+	option hostname 'DOTYWRT'
+	option timezone '<+08>-8'
+	option ttylogin '0'
+	option log_size '128'
+	option urandom_seed '0'
+	option zonename 'Asia/Kuala Lumpur'
+	option log_proto 'udp'
+	option conloglevel '8'
+	option cronloglevel '7'
+
+config timeserver 'ntp'
+	list server 'time1.apple.com'
+	list server 'time1.google.com'
+	list server 'time.cloudflare.com'
+	list server 'pool.ntp.org'
+
+config led 'led_5g'
+	option name '5G'
+	option sysfs 'blue:5g'
+	option trigger 'netdev'
+	option dev 'wwan0'
+	list mode 'link'
+	list mode 'tx'
+	list mode 'rx'
+
+config led 'led_wan'
+	option name 'WAN'
+	option sysfs 'green:internet'
+	option trigger 'netdev'
+	option mode 'link tx rx'
+	option dev 'wan'
+
+config led 'led_wan_port_link'
+	option name 'WAN-PORT-LINK'
+	option sysfs '90000.mdio-1:1c:green:wan'
+	option trigger 'netdev'
+	option mode 'tx rx link_10 link_100 link_1000 link_2500'
+	option dev 'wan'
+
+config sysctl
+	option option 'net.core.rmem_max'
+	option value '26214400'
+
+config sysctl
+	option option 'net.core.wmem_max'
+	option value '26214400'
+
+config sysctl
+	option option 'net.core.netdev_max_backlog'
+	option value '5000'
+
+config sysctl
+	option option 'net.ipv4.tcp_rmem'
+	option value '4096 87380 16777216'
+
+config sysctl
+	option option 'net.ipv4.tcp_wmem'
+	option value '4096 65536 16777216'
+
+config sysctl
+	option option 'net.ipv4.tcp_congestion_control'
+	option value 'bbr'
+
+config sysctl
+	option option 'net.core.default_qdisc'
+	option value 'fq'
+
+config sysctl
+	option option 'net.ipv4.tcp_low_latency'
+	option value '1'
+
+config sysctl
+	option option 'net.ipv4.tcp_timestamps'
+	option value '1'
+
+config sysctl
+	option option 'net.ipv4.tcp_sack'
+	option value '1'
+
+config sysctl
+	option option 'net.ipv4.tcp_window_scaling'
+	option value '1'
+
+config sysctl
+	option option 'net.ipv4.tcp_tw_reuse'
+	option value '1'
+
+config led
+	option name 'MOBILE SIGNAL'
+	option sysfs 'green:signal'
+	option trigger 'netdev'
+	option dev 'wwan0'
+	list mode 'link'
+
+config led
+	option name 'WIFI'
+	option sysfs 'green:wifi'
+	option trigger 'default-on'
+
+config led
+	option name 'INTERNETE'
+	option sysfs 'green:internet'
+	option trigger 'default-on'
+
+config led
+	option name 'PHONE'
+	option sysfs 'green:phone'
+	option trigger 'default-on'
+
