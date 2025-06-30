@@ -40,6 +40,23 @@ jobs:
 
       - name: Show feeds.conf.default
         run: cat ./feeds.conf.default
+        
+      - name: Check required files
+        run: |
+          REQUIRED_FILES=(
+            "./files/etc/uci-defaults/99-nss-custom"
+            "./AW1000.seed"
+          )
+
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Required file missing: $file"
+              exit 1
+            else
+              echo "✅ Found: $file"
+              chmod +x files/etc/uci-defaults/99-nss-custom
+            fi
+          done
 
       - name: Show disk space before cleanup
         run: df -h
