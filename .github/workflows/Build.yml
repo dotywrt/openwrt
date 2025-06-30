@@ -107,7 +107,7 @@ jobs:
         run: make toolchain/install -j$(nproc) || make toolchain/install
 
       - name: Build firmware
-        run: make j1 V=s
+        run: make -j1 V=s
 
       - name: Copy bin & metadata
         run: |
