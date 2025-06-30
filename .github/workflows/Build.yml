@@ -121,5 +121,4 @@ jobs:
         with:
           name: ${{ env.FW_BASENAME }}
           path: |
-            backup/
-            bin/targets/**/**/*.bin
+            backup/ 
