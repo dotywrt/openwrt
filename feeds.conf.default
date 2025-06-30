@@ -1,7 +1,7 @@
 src-git wwan https://github.com/immortalwrt/wwan-packages.git
 src-git custom https://github.com/dotywrt/owrt-packages.git
 src-git packages https://github.com/Lienol/openwrt-packages.git;24.10
-src-git luci https://github.com/Lienol/openwrt-luci.git;24.10
+src-git luci https://github.com/dotywrt/openwrt-luci.git;24.10
 src-git routing https://github.com/openwrt/routing.git;openwrt-24.10
 src-git telephony https://github.com/openwrt/telephony.git;openwrt-24.10
 src-git lienol https://github.com/Lienol/openwrt-package.git;main
