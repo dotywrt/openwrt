@@ -126,7 +126,7 @@ jobs:
 
       - name: Disable opkg GPG signature check
         run: |
-          echo 'option check_signature 0' >> /etc/opkg.conf
+          echo 'option check_signature 0' >> /package/system/opkg/files/opkg.conf
 
       - name: Download package sources
         run: make download
