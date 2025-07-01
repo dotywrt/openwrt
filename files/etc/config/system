@@ -1,3 +1,4 @@
+
 config system
 	option hostname 'DOTYWRT'
 	option timezone '<+08>-8'
@@ -22,10 +23,12 @@ config led 'led_power'
 
 config led 'led_5g'
 	option name '5G'
-	option sysfs 'green:5g'
+	option sysfs 'blue:5g'
 	option trigger 'netdev'
-	option mode 'link tx rx'
 	option dev 'wwan0'
+	list mode 'link'
+	list mode 'tx'
+	list mode 'rx'
 
 config led 'led_mobile_signal'
 	option name 'MOBILE SIGNAL'
@@ -35,25 +38,23 @@ config led 'led_mobile_signal'
 	option dev 'wwan0'
 
 config led 'led_wifi'
-	option name 'WIFI'
+	option name 'WIFI 5G'
 	option sysfs 'green:wifi'
 	option trigger 'netdev'
-	option mode 'link tx rx'
-	option dev 'wlan0' 
+	option dev 'phy0-ap0'
+	list mode 'link'
+	list mode 'tx'
+	list mode 'rx'
 
 config led 'led_phone'
 	option name 'PHONE'
 	option sysfs 'green:phone'
-	option trigger 'netdev'
-	option mode 'link tx rx'
-	option dev 'usb0'  
+	option trigger 'default-on'
 
 config led 'led_wan'
 	option name 'WAN'
 	option sysfs 'green:internet'
-	option trigger 'netdev'
-	option mode 'link tx rx'
-	option dev 'wan'
+	option trigger 'default-on'
 
 config led 'led_wan_port_link'
 	option name 'WAN-PORT-LINK'
@@ -61,3 +62,48 @@ config led 'led_wan_port_link'
 	option trigger 'netdev'
 	option mode 'tx rx link_10 link_100 link_1000 link_2500'
 	option dev 'wan'
+
+config sysctl
+	option option 'net.core.rmem_max'
+	option value '26214400'
+
+config sysctl
+	option option 'net.core.wmem_max'
+	option value '26214400'
+
+config sysctl
+	option option 'net.core.netdev_max_backlog'
+	option value '5000'
+
+config sysctl
+	option option 'net.ipv4.tcp_low_latency'
+	option value '1'
+
+config sysctl
+	option option 'net.ipv4.tcp_tw_reuse'
+	option value '1'
+
+config sysctl
+	option option 'net.ipv4.tcp_window_scaling'
+	option value '1'
+
+config sysctl
+	option option 'net.ipv4.tcp_sack'
+	option value '1'
+
+config sysctl
+	option option 'net.ipv4.tcp_timestamps'
+	option value '1'
+
+config sysctl
+	option option 'net.core.default_qdisc'
+	option value 'fq'
+
+config led
+	option name 'WIFI 2G'
+	option sysfs 'green:wifi'
+	option trigger 'netdev'
+	option dev 'phy1-ap0'
+	list mode 'link'
+	list mode 'tx'
+	list mode 'rx'
