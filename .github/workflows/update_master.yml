@@ -21,21 +21,25 @@ jobs:
       - name: Checkout source branch (24.10-nss) and copy files
         run: |
           git checkout 24.10-nss
-          mkdir -p temp-copy
-          cp -r .github/workflows/Build.yml temp-copy/
+          mkdir -p temp-copy/.github/workflows
+          cp .github/workflows/Build.yml temp-copy/.github/workflows/
           cp -r files temp-copy/
-          cp -r AW1000.seed temp-copy/
+          cp AW1000.seed temp-copy/
 
-      - name: Checkout destination branch (master) and apply changes
+      - name: Checkout destination branch (master) and apply files
         run: |
           git checkout master
-          cp -r temp-copy/Build.yml .github/workflows/
+          cp temp-copy/.github/workflows/Build.yml .github/workflows/
           cp -r temp-copy/files .
-          cp -r temp-copy/AW1000.seed .
+          cp temp-copy/AW1000.seed .
+
+      - name: Replace text in Build.yml (24.10-LNSS ➜ 24.10-M, 24.10-nss ➜ master)
+        run: |
+          sed -i 's/24.10-LNSS/24.10-M/g' .github/workflows/Build.yml
+          sed -i 's/24.10-nss/master/g' .github/workflows/Build.yml
 
       - name: Commit and push
         run: |
           git add -f .github/workflows/Build.yml files AW1000.seed
-          git commit -m "Copy Build.yml, files/, and AW1000.seed from 24.10-nss" || echo "No changes to commit"
+          git commit -m "Sync from 24.10-nss → master: updated Build.yml, files/, AW1000.seed" || echo "No changes to commit"
           git push origin master
-
