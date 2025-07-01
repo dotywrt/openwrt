@@ -2,8 +2,8 @@
 . /usr/share/libubox/jshn.sh
 
 # 默认WIFI设置
-BASE_SSID='Openwrt'
-BASE_WORD='12345678'
+BASE_SSID='DOTYWRT'
+BASE_WORD='dotycat.com'
 BASE_POWER='auto'
 
 # 获取无线设备的数量
