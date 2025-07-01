@@ -1,0 +1,40 @@
+name: Copy files from 24.10-nss to master
+
+on:
+  workflow_dispatch:
+
+jobs:
+  copy-files:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout full repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required to switch branches
+
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Checkout source branch (24.10-nss) and copy files
+        run: |
+          git checkout 24.10-nss
+          mkdir -p temp-copy
+          cp -r .github/workflows/Build.yml temp-copy/
+          cp -r files temp-copy/
+          cp -r AW1000.seed temp-copy/
+
+      - name: Checkout destination branch (master) and apply changes
+        run: |
+          git checkout master
+          cp -r temp-copy/Build.yml .github/workflows/
+          cp -r temp-copy/files .
+          cp -r temp-copy/AW1000.seed .
+
+      - name: Commit and push
+        run: |
+          git add .github/workflows/Build.yml files AW1000.seed
+          git commit -m "Copy Build.yml, files/, and AW1000.seed from 24.10-nss" || echo "No changes to commit"
+          git push origin master
