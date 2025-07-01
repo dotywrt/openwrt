@@ -8,12 +8,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout full repo
+      - name: Checkout full repo with PAT
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required to switch branches
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 0  # Needed for full branch history and switching
 
-      - name: Set up Git
+      - name: Set up Git identity
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -26,14 +27,14 @@ jobs:
           cp -r files temp-copy/
           cp AW1000.seed temp-copy/
 
-      - name: Checkout destination branch (master) and apply files
+      - name: Switch to destination branch (master) and apply changes
         run: |
           git checkout master
           cp temp-copy/.github/workflows/Build.yml .github/workflows/
           cp -r temp-copy/files .
           cp temp-copy/AW1000.seed .
 
-      - name: Replace text in Build.yml (24.10-LNSS ➜ 24.10-M, 24.10-nss ➜ master)
+      - name: Replace version names inside Build.yml
         run: |
           sed -i 's/24.10-LNSS/24.10-M/g' .github/workflows/Build.yml
           sed -i 's/24.10-nss/master/g' .github/workflows/Build.yml
