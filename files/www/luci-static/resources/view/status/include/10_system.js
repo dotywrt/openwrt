@@ -53,7 +53,7 @@ return baseclass.extend({
     }
 
     var fields = [
-      _('Firmware'), 'XXXX',
+      _('Firmware'), 'DOTYWRT-XXXX',
       _('Version'), boardinfo?.release?.description?.split(' r')[0] || '',
       _('Kernel'), boardinfo.kernel,
       _('Local Time'), datestr,
