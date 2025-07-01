@@ -13,9 +13,6 @@ var callSystemBoard = declareCall('system', 'board');
 var callSystemInfo = declareCall('system', 'info');
 var callCPUBench = declareCall('luci', 'getCPUBench');
 var callCPUInfo = declareCall('luci', 'getCPUInfo');
-var callCPUUsage = declareCall('luci', 'getCPUUsage');
-var callTempInfo = declareCall('luci', 'getTempInfo');
-var callOnlineUsers = declareCall('luci', 'getOnlineUsers');
 
 return baseclass.extend({
   title: _('System'),
@@ -26,13 +23,10 @@ return baseclass.extend({
       L.resolveDefault(callSystemInfo(), {}),
       L.resolveDefault(callCPUBench(), {}),
       L.resolveDefault(callCPUInfo(), {}),
-      L.resolveDefault(callCPUUsage(), {}),
-      L.resolveDefault(callTempInfo(), {}),
       L.resolveDefault(callLuciVersion(), {
         revision: _('unknown version'),
         branch: 'LuCI'
-      }),
-      L.resolveDefault(callOnlineUsers(), {})
+      })
     ]);
   },
 
@@ -41,10 +35,8 @@ return baseclass.extend({
     var systeminfo = data[1];
     var cpubench = data[2];
     var cpuinfo = data[3];
-    var cpuusage = data[4];
-    var tempinfo = data[5];
-    var luciversion = data[6];
-    var onlineusers = data[7];
+    var luciversion = data[4];
+
     luciversion = luciversion.branch + ' ' + luciversion.revision;
 
     var datestr = null;
@@ -61,19 +53,13 @@ return baseclass.extend({
     }
 
     var fields = [
-      _('Firmware'), 'DOTYWRT V1.0',
+      _('Firmware'), 'XXXX',
       _('Version'), boardinfo?.release?.description?.split(' r')[0] || '',
       _('Kernel'), boardinfo.kernel,
       _('Local Time'), datestr,
       _('Uptime'), systeminfo.uptime ? '%t'.format(systeminfo.uptime) : null,
-      _('CPU usage (%)'), cpuusage.cpuusage,
-      _('Online Users'), onlineusers ? onlineusers.onlineusers : null
+      _('Release Date'), 'DDDD'
     ];
-
-    if (tempinfo.tempinfo) {
-      fields.splice(2, 0, _('Temperature'));
-      fields.splice(3, 0, tempinfo.tempinfo);
-    }
 
     var table = E('table', { 'class': 'table' });
 
