@@ -1,0 +1,90 @@
+name: Cleanup Old Workflows
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Kuala_Lumpur  # Set Malaysia time zone
+
+    steps:
+      - name: Show current Malaysia time
+        run: |
+          echo "🇲🇾 Malaysia Time: $(date)"
+
+      - name: Install GitHub CLI
+        run: |
+          curl -sSL https://github.com/cli/cli/releases/download/v2.47.0/gh_2.47.0_linux_amd64.tar.gz | tar -xz
+          sudo cp gh_2.47.0_linux_amd64/bin/gh /usr/local/bin/
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Authenticate with GITHUB_TOKEN
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Log skipped running workflows (optional)
+        run: |
+          echo "🔍 Checking for running workflows..."
+          gh api -H "Accept: application/vnd.github+json" /repos/${{ github.repository }}/actions/runs?per_page=100 | \
+          jq -r '.workflow_runs[] | select(.status == "in_progress" or .status == "queued") | "⏳ Skipping running: ID=\(.id) Name=\(.name) Status=\(.status)"'
+
+      - name: Delete all but latest workflow runs (excluding running)
+        run: |
+          echo "🧹 Deleting old workflow runs (excluding running)..."
+          gh api -H "Accept: application/vnd.github+json" /repos/${{ github.repository }}/actions/runs?per_page=100 | \
+          jq -r '.workflow_runs 
+            | sort_by(.created_at) 
+            | reverse 
+            | .[1:][] 
+            | select(.status != "in_progress" and .status != "queued") 
+            | .id' | \
+          while read run_id; do
+            echo "🗑️ Deleting workflow run ID: $run_id"
+            gh api --method DELETE /repos/${{ github.repository }}/actions/runs/$run_id || echo "❌ Failed to delete run $run_id"
+          done
+
+      - name: Delete old releases (keep latest)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🧹 Cleaning old releases..."
+          LATEST_TAG=$(gh api repos/${{ github.repository }}/tags --paginate --jq '.[].name' | head -n 1)
+          echo "✅ Latest tag: $LATEST_TAG"
+
+          gh api repos/${{ github.repository }}/releases --paginate --jq '.[] | {id, tag_name}' | \
+          jq -c '.' | while read release; do
+            RELEASE_ID=$(echo "$release" | jq -r '.id')
+            TAG_NAME=$(echo "$release" | jq -r '.tag_name')
+
+            if [ "$TAG_NAME" != "$LATEST_TAG" ]; then
+              echo "🗑️ Deleting release: $TAG_NAME (ID: $RELEASE_ID)"
+              gh api --method DELETE repos/${{ github.repository }}/releases/$RELEASE_ID || echo "❌ Failed to delete release $RELEASE_ID"
+            else
+              echo "✅ Keeping latest release: $TAG_NAME"
+            fi
+          done
+
+      - name: Delete old tags (keep latest)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🧹 Cleaning old tags..."
+          TAGS=$(gh api repos/${{ github.repository }}/tags --paginate --jq '.[].name')
+          LATEST_TAG=$(echo "$TAGS" | head -n 1)
+
+          for TAG in $TAGS; do
+            if [ "$TAG" != "$LATEST_TAG" ]; then
+              echo "🗑️ Deleting tag: $TAG"
+              gh api --method DELETE repos/${{ github.repository }}/git/refs/tags/$TAG || echo "❌ Failed to delete tag $TAG"
+            else
+              echo "✅ Keeping tag: $TAG"
+            fi
+          done
