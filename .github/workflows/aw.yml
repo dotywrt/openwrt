@@ -20,7 +20,7 @@ on:
 
 jobs:
   build:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/v24.10-K6.6-x-nss'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -29,7 +29,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          ref: master
+          ref: v24.10-K6.6-x-nss
           fetch-depth: 0
 
       - name: Set timezone to Malaysia
